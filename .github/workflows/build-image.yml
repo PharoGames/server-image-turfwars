@@ -175,27 +175,13 @@ jobs:
       - name: Get merged image digest
         id: digest
         run: |
-          DIGEST=$(docker buildx imagetools inspect --raw ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }} | sha256sum | awk '{print "sha256:"$1}')
+          # Use the digest OCI clients resolve for pulls — not sha256(raw manifest bytes), which can drift from GHCR.
+          REF="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}"
+          DIGEST=$(docker buildx imagetools inspect "$REF" --format '{{.Manifest.Digest}}')
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
           echo "Merged image digest: ${DIGEST}"
 
-      - name: Delete temporary build tags
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          IMAGE_ONLY=$(echo '${{ env.IMAGE_NAME }}' | cut -d'/' -f2)
-          for RUNNER in amd64 arm64; do
-            TAG="build-${{ github.run_id }}-${RUNNER}"
-            VERSION_ID=$(gh api "/orgs/${{ github.repository_owner }}/packages/container/${IMAGE_ONLY}/versions" \
-              --jq ".[] | select(.metadata.container.tags[] == \"${TAG}\") | .id" 2>/dev/null || true)
-            if [ -n "$VERSION_ID" ]; then
-              gh api -X DELETE "/orgs/${{ github.repository_owner }}/packages/container/${IMAGE_ONLY}/versions/${VERSION_ID}" && \
-                echo "Deleted temp tag ${TAG}" || echo "Could not delete ${TAG} (may need admin)"
-            else
-              echo "Temp tag ${TAG} not found or already deleted"
-            fi
-          done
+      # Do not delete per-arch build package versions: GHCR can GC manifests still referenced by the multi-arch index, breaking pulls (ErrImagePull / NotFound on child digest).
 
   post-deploy:
     needs: merge
@@ -237,7 +223,8 @@ jobs:
       - name: Get merged image digest
         id: digest
         run: |
-          DIGEST=$(docker buildx imagetools inspect --raw ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest | sha256sum | awk '{print "sha256:"$1}')
+          REF="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          DIGEST=$(docker buildx imagetools inspect "$REF" --format '{{.Manifest.Digest}}')
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
           echo "Image digest: ${DIGEST}"
 
