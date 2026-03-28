@@ -123,6 +123,8 @@ jobs:
   merge:
     needs: build
     runs-on: ubuntu-latest
+    outputs:
+      digest: ${{ steps.digest.outputs.digest }}
     permissions:
       contents: read
       packages: write
@@ -219,12 +221,12 @@ jobs:
           app_id: ${{ secrets.APP_ID }}
           private_key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Get merged image digest
+      - name: Use merge job digest
         id: digest
         run: |
-          DIGEST=$(docker buildx imagetools inspect --raw ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest | sha256sum | awk '{print "sha256:"$1}')
+          DIGEST='${{ needs.merge.outputs.digest }}'
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
-          echo "Image digest: ${DIGEST}"
+          echo "Image digest from merge job: ${DIGEST}"
 
       - name: Update image manifest in infrastructure repo
         continue-on-error: true
