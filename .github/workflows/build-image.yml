@@ -43,15 +43,17 @@ jobs:
         include:
           - platform: linux/amd64
             runner: ubuntu-latest
+            arch: amd64
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
+            arch: arm64
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
       packages: write
       actions: read
     env:
-      DOCKER_CONFIG: /tmp/.docker-${{ github.run_id }}-${{ matrix.runner }}
+      DOCKER_CONFIG: /tmp/.docker-${{ github.run_id }}-${{ matrix.arch }}
 
     steps:
       - name: Checkout repository
@@ -105,7 +107,7 @@ jobs:
           context: .
           platforms: ${{ matrix.platform }}
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-${{ github.run_id }}-${{ matrix.runner }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-${{ github.run_id }}-${{ matrix.arch }}
           provenance: false
           sbom: false
           build-args: |
@@ -115,8 +117,8 @@ jobs:
             AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION=us-east-1
             PUBLIC_PLUGINS_BUCKET=pharogames-plugins
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ matrix.runner }}
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ matrix.runner }},mode=max
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ matrix.arch }}
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ matrix.arch }},mode=max
 
   merge:
     needs: build
