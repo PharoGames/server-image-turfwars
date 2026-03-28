@@ -29,6 +29,9 @@ RUN echo "cache_bust=$CACHE_BUST" && mkdir -p plugins && \
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
 
+ARG CACHE_BUST=""
+LABEL com.pharogames.build-cache-bust="${CACHE_BUST}"
+
 # Install required packages
 RUN apk add --no-cache curl ca-certificates coreutils
 
