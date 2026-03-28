@@ -179,23 +179,8 @@ jobs:
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
           echo "Merged image digest: ${DIGEST}"
 
-      - name: Delete temporary build tags
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          IMAGE_ONLY=$(echo '${{ env.IMAGE_NAME }}' | cut -d'/' -f2)
-          for RUNNER in amd64 arm64; do
-            TAG="build-${{ github.run_id }}-${RUNNER}"
-            VERSION_ID=$(gh api "/orgs/${{ github.repository_owner }}/packages/container/${IMAGE_ONLY}/versions" \
-              --jq ".[] | select(.metadata.container.tags[] == \"${TAG}\") | .id" 2>/dev/null || true)
-            if [ -n "$VERSION_ID" ]; then
-              gh api -X DELETE "/orgs/${{ github.repository_owner }}/packages/container/${IMAGE_ONLY}/versions/${VERSION_ID}" && \
-                echo "Deleted temp tag ${TAG}" || echo "Could not delete ${TAG} (may need admin)"
-            else
-              echo "Temp tag ${TAG} not found or already deleted"
-            fi
-          done
+      # Skip GHCR cleanup of build-* package versions: kube saw NotFound on child manifest bf180dd7…
+      # while pulling manifest list 9397eab6… (games/turfwars pods, Init:ImagePullBackOff).
 
   post-deploy:
     needs: merge
