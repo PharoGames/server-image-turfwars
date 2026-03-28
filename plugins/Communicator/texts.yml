@@ -1,0 +1,14 @@
+turfwars:
+  scoreboard:
+    title: "<gold><bold>Turf Wars"
+    phase:
+      waiting: "<yellow>Waiting for players..."
+      build: "<green>Build Phase"
+      combat: "<red>Combat Phase"
+      peace: "<aqua>Peace Phase"
+      sudden_death: "<dark_red><bold>SUDDEN DEATH"
+      ended: "<gold><bold>Game Over"
+    starting_in: "<white>Starting in: <yellow>{seconds}s"
+    time_left: "<white>Time left: <yellow>{seconds}s"
+    blue_lines: "<blue>Blue Lines: <white>{lines}"
+    red_lines: "<red>Red Lines: <white>{lines}"

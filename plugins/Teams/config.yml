@@ -1,0 +1,17 @@
+default-friendly-fire: false
+default-invite-only: true
+auto-balance:
+  on-join: false
+  on-leave: false
+  on-command: true
+team-size:
+  default-max-size: -1
+  per-team: {}
+respawn:
+  enable-elimination: false
+  convert-to-spectator: false
+scoreboard:
+  enabled: false
+team-chat:
+  enabled: true
+  format: "{prefix}[TEAM] {player}: {message}"

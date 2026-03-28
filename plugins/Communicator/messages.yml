@@ -1,0 +1,54 @@
+turfwars:
+  countdown_tick:
+    message: "<yellow>Game starts in <red>{seconds}s</red>!"
+    sound: "UI_BUTTON_CLICK"
+  countdown_cancelled:
+    message: "<red>Not enough players to start the game! Countdown cancelled."
+    sound: "ENTITY_VILLAGER_NO"
+  build_start:
+    message: "<green>Build Phase started! You have <yellow>40s</yellow> to build cover."
+    title:
+      title: "<green>BUILD PHASE"
+      subtitle: "<yellow>Build cover!"
+      fadeIn: 10
+      stay: 40
+      fadeOut: 20
+    sound: "ENTITY_ENDER_DRAGON_GROWL"
+  combat_start:
+    message: "<red>Combat Phase started! Fight!"
+    title:
+      title: "<red>COMBAT PHASE"
+      subtitle: "<yellow>Eliminate the enemy!"
+      fadeIn: 10
+      stay: 40
+      fadeOut: 20
+    sound: "ENTITY_WITHER_SPAWN"
+  peace_start:
+    message: "<green>Peace Phase started! You have <yellow>16s</yellow> to rebuild cover."
+    title:
+      title: "<green>PEACE PHASE"
+      subtitle: "<yellow>Rebuild cover!"
+      fadeIn: 10
+      stay: 40
+      fadeOut: 20
+    sound: "ENTITY_PLAYER_LEVELUP"
+  sudden_death_start:
+    message: "<dark_red><bold>SUDDEN DEATH! No more peace phases. Kills are worth double!"
+    title:
+      title: "<dark_red><bold>SUDDEN DEATH"
+      subtitle: "<red>No more peace phases!"
+      fadeIn: 10
+      stay: 60
+      fadeOut: 20
+    sound: "ENTITY_ENDER_DRAGON_DEATH"
+  player_eliminated:
+    message: "<red>{victim}</red> <gray>was eliminated by</gray> <green>{killer}</green>!"
+  win:
+    message: "<gold><bold>Team {color}{team} <gold><bold>wins the game!"
+    title:
+      title: "<gold><bold>VICTORY"
+      subtitle: "{color}{team} Team wins!"
+      fadeIn: 10
+      stay: 100
+      fadeOut: 20
+    sound: "UI_TOAST_CHALLENGE_COMPLETE"

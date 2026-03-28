@@ -1,0 +1,20 @@
+[
+  { "s3_key": "LuckPerms-Bukkit-5.5.17.jar", "output": "LuckPerms-Bukkit.jar" },
+  { "s3_key": "plugin-relay-backend.jar", "output": "plugin-relay-backend.jar" },
+  { "s3_key": "plugin-chat.jar", "output": "plugin-chat.jar" },
+  { "s3_key": "plugin-communicator.jar", "output": "plugin-communicator.jar" },
+  { "s3_key": "plugin-player-data.jar", "output": "plugin-player-data.jar" },
+  { "s3_key": "plugin-teams.jar", "output": "plugin-teams.jar" },
+  { "s3_key": "plugin-spectator.jar", "output": "plugin-spectator.jar" },
+  { "s3_key": "plugin-scoreboard.jar", "output": "plugin-scoreboard.jar" },
+  { "s3_key": "plugin-permissions.jar", "output": "plugin-permissions.jar" },
+  { "s3_key": "plugin-items.jar", "output": "plugin-items.jar" },
+  { "s3_key": "plugin-moderation.jar", "output": "plugin-moderation.jar" },
+  { "s3_key": "plugin-gameplay-runtime.jar", "output": "plugin-gameplay-runtime.jar" },
+  { "s3_key": "plugin-cosmetics.jar", "output": "plugin-cosmetics.jar" },
+  { "s3_key": "plugin-coins.jar", "output": "plugin-coins.jar" },
+  { "s3_key": "plugin-turfwars.jar", "output": "plugin-turfwars.jar" },
+  { "s3_key": "packetevents-spigot-2.11.2.jar", "output": "packetevents-spigot.jar" },
+  { "s3_key": "plugin-defaults.jar", "output": "plugin-defaults.jar" },
+  { "s3_key": "voicechat-bukkit-2.6.12.jar", "output": "voicechat-bukkit.jar" }
+]

@@ -1,0 +1,119 @@
+{
+  "version": "1.0",
+  "configFiles": [
+    {
+      "path": "plugins/RelayBackend/config.yml",
+      "plugin": "RelayBackend",
+      "filename": "config.yml",
+      "type": "plugin"
+    },
+    {
+      "path": "plugins/Chat/config.yml",
+      "plugin": "Chat",
+      "filename": "config.yml",
+      "type": "plugin"
+    },
+    {
+      "path": "plugins/Communicator/messages.yml",
+      "plugin": "Communicator",
+      "filename": "messages.yml",
+      "type": "plugin"
+    },
+    {
+      "path": "plugins/Communicator/actionbars.yml",
+      "plugin": "Communicator",
+      "filename": "actionbars.yml",
+      "type": "plugin"
+    },
+    {
+      "path": "plugins/Communicator/bossbars.yml",
+      "plugin": "Communicator",
+      "filename": "bossbars.yml",
+      "type": "plugin"
+    },
+    {
+      "path": "plugins/Communicator/texts.yml",
+      "plugin": "Communicator",
+      "filename": "texts.yml",
+      "type": "plugin"
+    },
+    {
+      "path": "plugins/Permissions/config.yml",
+      "plugin": "Permissions",
+      "filename": "config.yml",
+      "type": "plugin"
+    },
+    {
+      "path": "plugins/Scoreboard/config.yml",
+      "plugin": "Scoreboard",
+      "filename": "config.yml",
+      "type": "plugin"
+    },
+    {
+      "path": "plugins/Items/config.yml",
+      "plugin": "Items",
+      "filename": "config.yml",
+      "type": "plugin"
+    },
+    {
+      "path": "plugins/Moderation/config.yml",
+      "plugin": "Moderation",
+      "filename": "config.yml",
+      "type": "plugin"
+    },
+    {
+      "path": "plugins/TurfWars/config.yml",
+      "plugin": "TurfWars",
+      "filename": "config.yml",
+      "type": "plugin"
+    },
+    {
+      "path": "plugins/Teams/config.yml",
+      "plugin": "Teams",
+      "filename": "config.yml",
+      "type": "plugin"
+    },
+    {
+      "path": "plugins/voicechat/voicechat-server.properties",
+      "plugin": "VoiceChat",
+      "filename": "voicechat-server.properties",
+      "type": "plugin"
+    },
+    {
+      "path": "plugins/GameplayRuntime/config.yml",
+      "plugin": "GameplayRuntime",
+      "filename": "config.yml",
+      "type": "plugin"
+    },
+    {
+      "path": "server.properties",
+      "filename": "server.properties",
+      "type": "server"
+    },
+    {
+      "path": "bukkit.yml",
+      "filename": "bukkit.yml",
+      "type": "server"
+    },
+    {
+      "path": "spigot.yml",
+      "filename": "spigot.yml",
+      "type": "server"
+    },
+    {
+      "path": "purpur.yml",
+      "filename": "purpur.yml",
+      "type": "server"
+    },
+    {
+      "path": "config/paper-global.yml",
+      "filename": "paper-global.yml",
+      "type": "server"
+    },
+    {
+      "path": "config/paper-world-defaults.yml",
+      "filename": "paper-world-defaults.yml",
+      "type": "server"
+    }
+  ]
+}

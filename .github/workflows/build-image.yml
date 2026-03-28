@@ -1,0 +1,313 @@
+name: Build and Push TurfWars Server Image
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      serverType:
+        description: 'Server type to build'
+        required: false
+        default: 'turfwars'
+      reason:
+        description: 'Reason for rebuild'
+        required: false
+      triggeredBy:
+        description: 'Who/what triggered this build'
+        required: false
+        default: 'manual'
+      pluginName:
+        description: 'Plugin name (if triggered by plugin update)'
+        required: false
+      pluginRepo:
+        description: 'Plugin repository'
+        required: false
+      version:
+        description: 'Plugin version'
+        required: false
+      configVersion:
+        description: 'Config version'
+        required: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  ORCHESTRATOR_URL: ${{ secrets.ORCHESTRATOR_URL || 'http://orchestrator.orchestrator.svc.cluster.local:3000' }}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: amd64
+          - platform: linux/arm64
+            runner: arm64
+    runs-on: [self-hosted, "${{ matrix.runner }}"]
+    permissions:
+      contents: read
+      packages: write
+      actions: read
+    env:
+      DOCKER_CONFIG: /tmp/.docker-${{ github.run_id }}-${{ matrix.runner }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set lowercase image name
+        run: echo "IMAGE_NAME=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Prepare buildx driver options
+        id: buildx-opts
+        run: |
+          if [ -n "${HTTPS_PROXY:-}" ]; then
+            {
+              echo "driver_opts<<OPTS_EOF"
+              echo "network=host"
+              echo "env.HTTP_PROXY=${HTTP_PROXY}"
+              echo "env.HTTPS_PROXY=${HTTPS_PROXY}"
+              echo "OPTS_EOF"
+            } >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "driver_opts<<OPTS_EOF"
+              echo "network=host"
+              echo "OPTS_EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          platforms: ${{ matrix.platform }}
+          driver-opts: ${{ steps.buildx-opts.outputs.driver_opts }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push platform-specific image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-${{ github.run_id }}-${{ matrix.runner }}
+          provenance: false
+          sbom: false
+          build-args: |
+            PURPUR_VERSION=1.21.11
+            CACHE_BUST=${{ github.run_id }}-${{ github.run_attempt }}
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION=us-east-1
+            PUBLIC_PLUGINS_BUCKET=pharogames-plugins
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ matrix.runner }}
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ matrix.runner }},mode=max
+
+  merge:
+    needs: build
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      packages: write
+    env:
+      DOCKER_CONFIG: /tmp/.docker-${{ github.run_id }}-merge
+
+    steps:
+      - name: Set lowercase image name
+        run: echo "IMAGE_NAME=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Create and push multi-arch manifest
+        run: |
+          docker buildx imagetools create \
+            $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-${{ github.run_id }}-amd64 \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-${{ github.run_id }}-arm64
+          echo "Manifest created with tags:"
+          jq -cr '.tags[]' <<< "$DOCKER_METADATA_OUTPUT_JSON"
+
+      - name: Inspect manifest
+        run: |
+          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+      - name: Get merged image digest
+        id: digest
+        run: |
+          DIGEST=$(docker buildx imagetools inspect --raw ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }} | sha256sum | awk '{print "sha256:"$1}')
+          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+          echo "Merged image digest: ${DIGEST}"
+
+      - name: Delete temporary build tags
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          IMAGE_ONLY=$(echo '${{ env.IMAGE_NAME }}' | cut -d'/' -f2)
+          for RUNNER in amd64 arm64; do
+            TAG="build-${{ github.run_id }}-${RUNNER}"
+            VERSION_ID=$(gh api "/orgs/${{ github.repository_owner }}/packages/container/${IMAGE_ONLY}/versions" \
+              --jq ".[] | select(.metadata.container.tags[] == \"${TAG}\") | .id" 2>/dev/null || true)
+            if [ -n "$VERSION_ID" ]; then
+              gh api -X DELETE "/orgs/${{ github.repository_owner }}/packages/container/${IMAGE_ONLY}/versions/${VERSION_ID}" && \
+                echo "Deleted temp tag ${TAG}" || echo "Could not delete ${TAG} (may need admin)"
+            else
+              echo "Temp tag ${TAG} not found or already deleted"
+            fi
+          done
+
+  post-deploy:
+    needs: merge
+    if: success()
+    runs-on: self-hosted
+    permissions:
+      contents: read
+      packages: write
+    env:
+      DOCKER_CONFIG: /tmp/.docker-${{ github.run_id }}-post
+
+    steps:
+      - name: Set lowercase image name
+        run: echo "IMAGE_NAME=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Generate GitHub App token
+        id: app-token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Get merged image digest
+        id: digest
+        run: |
+          DIGEST=$(docker buildx imagetools inspect --raw ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest | sha256sum | awk '{print "sha256:"$1}')
+          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
+          echo "Image digest: ${DIGEST}"
+
+      - name: Update image manifest in infrastructure repo
+        continue-on-error: true
+        run: |
+          echo "Updating image manifest in infrastructure repo..."
+
+          APP_TOKEN="${{ steps.app-token.outputs.token }}"
+          INFRA_REPO="PharoGames/infrastructure"
+          MANIFEST_PATH="kubernetes/turfwars/image-manifest.yaml"
+          IMAGE_DIGEST="${{ steps.digest.outputs.digest }}"
+          FULL_IMAGE="ghcr.io/pharogames/server-image-turfwars@${IMAGE_DIGEST}"
+
+          INFRA_DIR=$(mktemp -d)
+          INFRA_REPO_URL="https://x-access-token:${APP_TOKEN}@github.com/${INFRA_REPO}.git"
+          git clone --depth 1 --branch main "$INFRA_REPO_URL" "$INFRA_DIR" || {
+            echo "Warning: Failed to clone infrastructure repo"
+            rm -rf "$INFRA_DIR"
+            exit 0
+          }
+
+          cd "$INFRA_DIR"
+
+          if [ -f "$MANIFEST_PATH" ]; then
+            if grep -q "^  image:" "$MANIFEST_PATH"; then
+              sed -i "s|^  image:.*|  image: ${FULL_IMAGE}|" "$MANIFEST_PATH"
+            elif grep -q "^image:" "$MANIFEST_PATH"; then
+              sed -i "s|^image:.*|image: ${FULL_IMAGE}|" "$MANIFEST_PATH"
+            else
+              echo "Warning: image field not found in manifest"
+            fi
+
+            git config user.name "GitHub Actions"
+            git config user.email "actions@github.com"
+            git add "$MANIFEST_PATH"
+            if git diff --staged --quiet; then
+              echo "No changes to commit (image manifest already up to date)"
+            else
+              git commit -m "chore: update turfwars image to ${IMAGE_DIGEST}"
+              git push origin main || echo "Failed to push (may require manual update)"
+              echo "Image manifest updated successfully"
+            fi
+          else
+            echo "Warning: Image manifest not found at $MANIFEST_PATH"
+          fi
+
+          rm -rf "$INFRA_DIR"
+
+      - name: Notify Orchestrator of new image
+        continue-on-error: true
+        run: |
+          echo "Notifying orchestrator of new image..."
+
+          IMAGE_TAG="latest"
+
+          echo "Using orchestrator URL: ${{ env.ORCHESTRATOR_URL }}"
+          echo "Image tag: $IMAGE_TAG"
+
+          curl -f -X POST \
+            -H "Authorization: Bearer ${{ secrets.ORCHESTRATOR_API_TOKEN }}" \
+            "${{ env.ORCHESTRATOR_URL }}/updateImage?serverType=turfwars&tag=$IMAGE_TAG" && \
+            echo "Successfully notified orchestrator" || \
+            echo "Warning: Failed to notify orchestrator (will be detected via image manifest polling)"
+
+      - name: Build summary
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Server Type:** turfwars" >> $GITHUB_STEP_SUMMARY
+          echo "**Platforms:** linux/amd64, linux/arm64 (native builds)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Digest:** \`${{ steps.digest.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Plugins:** downloaded from s3://pharogames-plugins/ (see plugins.json)" >> $GITHUB_STEP_SUMMARY
