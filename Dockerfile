@@ -124,18 +124,6 @@ RUN echo '#!/bin/sh' > /server/start.sh && \
     echo '  echo "Warning: No map loaded in /data/world, server will generate default world"' >> /server/start.sh && \
     echo 'fi' >> /server/start.sh && \
     echo '' >> /server/start.sh && \
-    echo '# region agent log' >> /server/start.sh && \
-    echo 'mkdir -p /data/config' >> /server/start.sh && \
-    echo 'if [ -n "${MAP_METADATA:-}" ]; then' >> /server/start.sh && \
-    echo '  printf "%s\n" "$MAP_METADATA" > /data/config/map-metadata.json' >> /server/start.sh && \
-    echo '  ts "map_metadata_written_from_env"' >> /server/start.sh && \
-    echo 'elif [ -f /data/config/map-metadata.json ]; then' >> /server/start.sh && \
-    echo '  ts "map_metadata_file_present"' >> /server/start.sh && \
-    echo 'else' >> /server/start.sh && \
-    echo '  echo "[STARTUP] map_metadata_missing env_and_file"' >> /server/start.sh && \
-    echo 'fi' >> /server/start.sh && \
-    echo '# endregion' >> /server/start.sh && \
-    echo '' >> /server/start.sh && \
     echo 'echo "========================================"' >> /server/start.sh && \
     echo 'echo "Starting TurfWars Server"' >> /server/start.sh && \
     echo 'echo "Server Type: turfwars"' >> /server/start.sh && \
