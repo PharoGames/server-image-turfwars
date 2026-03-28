@@ -1,0 +1,24 @@
+items:
+  turfwars_kit_selector:
+    material: PAPER
+    displayName: "<gold><bold>Kit Selector</bold>"
+    lore:
+      - "<gray>Right-click to reopen the"
+      - "<gray>kit selector before the match starts."
+    locked: true
+    droppable: false
+    movable: false
+    slot: 8
+
+  bow:
+    material: BOW
+    unbreakable: true
+
+  bow_punch_1:
+    material: BOW
+    unbreakable: true
+    enchantments:
+      punch: 1
+
+  arrow:
+    material: ARROW

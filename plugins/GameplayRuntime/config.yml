@@ -1,0 +1,66 @@
+schemaVersion: "1.0.0"
+
+kits:
+  marksman:
+    kitId: kit.marksman
+    displayName: Marksman
+    description: "The baseline archer. Starts with a standard bow and 5 arrows."
+    icon: BOW
+    iconSlot: 2
+    items:
+      - logicalId: bow
+        slot: 0
+        amount: 1
+      - logicalId: arrow
+        slot: 9
+        amount: 5
+    effects: []
+    metadata: {}
+
+  heavy:
+    kitId: kit.heavy
+    displayName: Heavy Quiver
+    description: "Sacrifices mobility for firepower. Starts with a standard bow and 12 arrows."
+    icon: ARROW
+    iconSlot: 3
+    items:
+      - logicalId: bow
+        slot: 0
+        amount: 1
+      - logicalId: arrow
+        slot: 9
+        amount: 12
+    effects: []
+    metadata: {}
+
+  scout:
+    kitId: kit.scout
+    displayName: Scout
+    description: "Highly mobile skirmisher. Starts with a standard bow but only 2 arrows."
+    icon: FEATHER
+    iconSlot: 4
+    items:
+      - logicalId: bow
+        slot: 0
+        amount: 1
+      - logicalId: arrow
+        slot: 9
+        amount: 2
+    effects: []
+    metadata: {}
+
+  sniper:
+    kitId: kit.sniper
+    displayName: Sniper
+    description: "Precision matters. Starts with a Punch I bow and 4 arrows."
+    icon: CROSSBOW
+    iconSlot: 5
+    items:
+      - logicalId: bow_punch_1
+        slot: 0
+        amount: 1
+      - logicalId: arrow
+        slot: 9
+        amount: 4
+    effects: []
+    metadata: {}
