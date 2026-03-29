@@ -52,3 +52,11 @@ turfwars:
       stay: 100
       fadeOut: 20
     sound: "UI_TOAST_CHALLENGE_COMPLETE"
+  top_killers_header:
+    message: "<gray>--- <gold><bold>Top Killers <gray>---"
+  top_killer_1:
+    message: "<yellow>1. {name} <gray>- <white>{kills} kills"
+  top_killer_2:
+    message: "<gold>2. {name} <gray>- <white>{kills} kills"
+  top_killer_3:
+    message: "<red>3. {name} <gray>- <white>{kills} kills"
