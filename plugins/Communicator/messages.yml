@@ -42,7 +42,7 @@ turfwars:
       fadeOut: 20
     sound: "ENTITY_ENDER_DRAGON_DEATH"
   player_eliminated:
-    message: "<red>{victim}</red> <gray>was eliminated by</gray> <green>{killer}</green>!"
+    message: "{victim} <gray>was eliminated by</gray> {killer}!"
   win:
     message: "<gold><bold>Team {color}{team} <gold><bold>wins the game!"
     title:
