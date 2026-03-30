@@ -41,6 +41,9 @@ turfwars:
       stay: 60
       fadeOut: 20
     sound: "ENTITY_ENDER_DRAGON_DEATH"
+  sudden_death_multiplier_increased:
+    message: "<dark_red><bold>SUDDEN DEATH: <yellow>Kills now count as <bold>{multiplier}x</bold> lines!</yellow>"
+    sound: "ENTITY_LIGHTNING_BOLT_THUNDER"
   player_eliminated:
     message: "{victim} <gray>was eliminated by</gray> {killer}!"
   win:

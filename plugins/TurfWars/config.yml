@@ -13,6 +13,7 @@ peaceWoolAmount: 25
 respawnDelayTicks: 40
 suddenDeathAfterRounds: 3
 suddenDeathLinesPerKill: 2
+suddenDeathMultiplierStepSeconds: 150
 suddenDeathWoolIntervalSeconds: 15
 suddenDeathWoolAmount: 10
 voidDeathY: -5
