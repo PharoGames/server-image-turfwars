@@ -115,7 +115,8 @@ jobs:
             CACHE_BUST=${{ github.run_id }}-${{ github.run_attempt }}
             AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION=us-east-1
+            AWS_REGION=auto
+            AWS_ENDPOINT_URL=${{ secrets.AWS_ENDPOINT_URL }}
             PUBLIC_PLUGINS_BUCKET=pharogames-plugins
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ matrix.arch }}
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ matrix.arch }},mode=max

@@ -5,7 +5,8 @@ WORKDIR /build
 
 ARG AWS_ACCESS_KEY_ID=""
 ARG AWS_SECRET_ACCESS_KEY=""
-ARG AWS_REGION="us-east-1"
+ARG AWS_REGION="auto"
+ARG AWS_ENDPOINT_URL=""
 ARG PUBLIC_PLUGINS_BUCKET="pharogames-plugins"
 ARG CACHE_BUST=""
 
@@ -22,6 +23,7 @@ RUN echo "cache_bust=$CACHE_BUST" && mkdir -p plugins && \
         AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
         AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
         aws s3 cp "s3://${PUBLIC_PLUGINS_BUCKET}/${S3_KEY}" "plugins/${OUTPUT}" \
+            --endpoint-url "${AWS_ENDPOINT_URL}" \
             --region "${AWS_REGION}"; \
     done && \
     echo "=== Downloaded plugins ===" && ls -la plugins/
