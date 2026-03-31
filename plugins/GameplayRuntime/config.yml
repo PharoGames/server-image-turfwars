@@ -17,10 +17,10 @@ kits:
     effects: []
     metadata: {}
 
-  heavy:
-    kitId: kit.heavy
-    displayName: Heavy Quiver
-    description: "Sacrifices mobility for firepower. Starts with a standard bow and 12 arrows."
+  juggernaut:
+    kitId: kit.juggernaut
+    displayName: Juggernaut
+    description: "Heavily armed. Starts with a standard bow and 15 arrows."
     icon: ARROW
     iconSlot: 3
     items:
@@ -29,19 +29,22 @@ kits:
         amount: 1
       - logicalId: arrow
         slot: 9
-        amount: 12
+        amount: 15
     effects: []
     metadata: {}
 
-  scout:
-    kitId: kit.scout
-    displayName: Scout
-    description: "Highly mobile skirmisher. Starts with a standard bow but only 2 arrows."
-    icon: FEATHER
+  infiltrator:
+    kitId: kit.infiltrator
+    displayName: Infiltrator
+    description: "Highly mobile skirmisher. Starts with a standard bow, 2 arrows, and an Ender Pearl."
+    icon: ENDER_PEARL
     iconSlot: 4
     items:
       - logicalId: bow
         slot: 0
+        amount: 1
+      - logicalId: ender_pearl
+        slot: 1
         amount: 1
       - logicalId: arrow
         slot: 9
@@ -52,15 +55,15 @@ kits:
   sniper:
     kitId: kit.sniper
     displayName: Sniper
-    description: "Precision matters. Starts with a Punch I bow and 4 arrows."
+    description: "Flat shots, fast reloads. Quick Charge III crossbow and 2 arrows — make each shot count."
     icon: CROSSBOW
     iconSlot: 5
     items:
-      - logicalId: bow_punch_1
+      - logicalId: crossbow_quick_charge
         slot: 0
         amount: 1
       - logicalId: arrow
         slot: 9
-        amount: 4
+        amount: 2
     effects: []
     metadata: {}

@@ -14,11 +14,14 @@ items:
     material: BOW
     unbreakable: true
 
-  bow_punch_1:
-    material: BOW
+  crossbow_quick_charge:
+    material: CROSSBOW
     unbreakable: true
     enchantments:
-      punch: 1
+      quick_charge: 3
+
+  ender_pearl:
+    material: ENDER_PEARL
 
   arrow:
     material: ARROW
