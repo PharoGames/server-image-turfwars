@@ -1,0 +1,3 @@
+# Boss bars — TurfWars does not use boss bar countdowns today.
+# Add entries under turfwars: if the plugin starts using Communicator boss bars.
+turfwars: {}

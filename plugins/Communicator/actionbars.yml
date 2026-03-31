@@ -1,0 +1,3 @@
+# Action bars — TurfWars uses chat/titles in messages.yml and scoreboard copy in texts.yml.
+# Add entries under turfwars: if the plugin starts using CommunicatorAPI.sendActionBar.
+turfwars: {}
