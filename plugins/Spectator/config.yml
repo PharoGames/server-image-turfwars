@@ -1,0 +1,5 @@
+# Spectator Plugin Configuration
+
+spectator:
+  # Do not give tools to match participants who die (e.g. while respawning)
+  give-tools-to-participants: false

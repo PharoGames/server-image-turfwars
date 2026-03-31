@@ -62,6 +62,12 @@
       "type": "plugin"
     },
     {
+      "path": "plugins/Spectator/config.yml",
+      "plugin": "Spectator",
+      "filename": "config.yml",
+      "type": "plugin"
+    },
+    {
       "path": "plugins/TurfWars/config.yml",
       "plugin": "TurfWars",
       "filename": "config.yml",
