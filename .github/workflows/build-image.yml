@@ -37,23 +37,11 @@ env:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: linux/amd64
-            runner: ubuntu-latest
-            arch: amd64
-          - platform: linux/arm64
-            runner: ubuntu-24.04-arm
-            arch: arm64
-    runs-on: ${{ matrix.runner }}
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
       actions: read
-    env:
-      DOCKER_CONFIG: /tmp/.docker-${{ github.run_id }}-${{ matrix.arch }}
 
     steps:
       - name: Checkout repository
@@ -84,7 +72,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          platforms: ${{ matrix.platform }}
+          platforms: linux/amd64
           driver-opts: ${{ steps.buildx-opts.outputs.driver_opts }}
 
       - name: Log in to GitHub Container Registry
@@ -100,14 +88,24 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+            - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
       - name: Build and push platform-specific image
         id: build
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: ${{ matrix.platform }}
+          platforms: linux/amd64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-${{ github.run_id }}-${{ matrix.arch }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           provenance: false
           sbom: false
           build-args: |
@@ -118,75 +116,11 @@ jobs:
             AWS_REGION=auto
             AWS_ENDPOINT_URL=${{ secrets.AWS_ENDPOINT_URL }}
             PUBLIC_PLUGINS_BUCKET=pharogames-plugins
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ matrix.arch }}
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ matrix.arch }},mode=max
-
-  merge:
-    needs: build
-    runs-on: ubuntu-latest
-    outputs:
-      digest: ${{ steps.digest.outputs.digest }}
-    permissions:
-      contents: read
-      packages: write
-    env:
-      DOCKER_CONFIG: /tmp/.docker-${{ github.run_id }}-merge
-
-    steps:
-      - name: Set lowercase image name
-        run: echo "IMAGE_NAME=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Extract metadata for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Create and push multi-arch manifest
-        run: |
-          docker buildx imagetools create \
-            $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-${{ github.run_id }}-amd64 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:build-${{ github.run_id }}-arm64
-          echo "Manifest created with tags:"
-          jq -cr '.tags[]' <<< "$DOCKER_METADATA_OUTPUT_JSON"
-
-      - name: Inspect manifest
-        run: |
-          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
-
-      - name: Get merged image digest
-        id: digest
-        run: |
-          DIGEST=$(docker buildx imagetools inspect --raw ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }} | sha256sum | awk '{print "sha256:"$1}')
-          echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
-          echo "Merged image digest: ${DIGEST}"
-
-      # Skip GHCR cleanup of build-* package versions: kube saw NotFound on child manifest bf180dd7…
-      # while pulling manifest list 9397eab6… (games/turfwars pods, Init:ImagePullBackOff).
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache,mode=max
 
   post-deploy:
-    needs: merge
+    needs: build
     if: success()
     runs-on: ubuntu-latest
     permissions:
@@ -222,12 +156,12 @@ jobs:
           app_id: ${{ secrets.APP_ID }}
           private_key: ${{ secrets.APP_PRIVATE_KEY }}
 
-      - name: Use merge job digest
+      - name: Get image digest
         id: digest
         run: |
-          DIGEST='${{ needs.merge.outputs.digest }}'
+          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest | cut -d'@' -f2)
           echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
-          echo "Image digest from merge job: ${DIGEST}"
+          echo "Image digest: ${DIGEST}"
 
       - name: Update image manifest in infrastructure repo
         continue-on-error: true
@@ -296,7 +230,7 @@ jobs:
           echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Server Type:** turfwars" >> $GITHUB_STEP_SUMMARY
-          echo "**Platforms:** linux/amd64, linux/arm64 (native builds)" >> $GITHUB_STEP_SUMMARY
+          echo "**Platforms:** linux/amd64" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Digest:** \`${{ steps.digest.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
