@@ -9,7 +9,7 @@ ARG PUBLIC_PLUGINS_BUCKET="pharogames-plugins"
 ARG CACHE_BUST=""
 
 RUN apk add --no-cache jq python3 py3-pip && \
-    pip3 install --break-system-packages awscli
+    pip3 install --no-cache-dir --break-system-packages awscli
 
 COPY plugins.json /tmp/plugins.json
 
