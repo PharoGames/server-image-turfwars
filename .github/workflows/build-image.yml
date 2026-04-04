@@ -80,7 +80,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GHCR_PUSH_TOKEN }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -111,11 +111,12 @@ jobs:
           build-args: |
             PURPUR_VERSION=1.21.11
             CACHE_BUST=${{ github.run_id }}-${{ github.run_attempt }}
-            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
             AWS_REGION=auto
             AWS_ENDPOINT_URL=${{ secrets.AWS_ENDPOINT_URL }}
             PUBLIC_PLUGINS_BUCKET=pharogames-plugins
+          secrets: |
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache,mode=max
 
@@ -141,7 +142,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GHCR_PUSH_TOKEN }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3

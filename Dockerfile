@@ -3,8 +3,6 @@ FROM alpine:3.19 AS builder
 
 WORKDIR /build
 
-ARG AWS_ACCESS_KEY_ID=""
-ARG AWS_SECRET_ACCESS_KEY=""
 ARG AWS_REGION="auto"
 ARG AWS_ENDPOINT_URL=""
 ARG PUBLIC_PLUGINS_BUCKET="pharogames-plugins"
@@ -15,7 +13,11 @@ RUN apk add --no-cache jq python3 py3-pip && \
 
 COPY plugins.json /tmp/plugins.json
 
-RUN echo "cache_bust=$CACHE_BUST" && mkdir -p plugins && \
+RUN --mount=type=secret,id=AWS_ACCESS_KEY_ID \
+    --mount=type=secret,id=AWS_SECRET_ACCESS_KEY \
+    export AWS_ACCESS_KEY_ID=$(cat /run/secrets/AWS_ACCESS_KEY_ID) && \
+    export AWS_SECRET_ACCESS_KEY=$(cat /run/secrets/AWS_SECRET_ACCESS_KEY) && \
+    echo "cache_bust=$CACHE_BUST" && mkdir -p plugins && \
     for row in $(cat /tmp/plugins.json | jq -r '.[] | @base64'); do \
         S3_KEY=$(echo "$row" | base64 -d | jq -r '.s3_key') && \
         OUTPUT=$(echo "$row" | base64 -d | jq -r '.output') && \
