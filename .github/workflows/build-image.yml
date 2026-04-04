@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: docker.io
+  IMAGE_NAME: pharogames/${{ github.repository }}
   ORCHESTRATOR_URL: ${{ secrets.ORCHESTRATOR_URL || 'http://orchestrator.orchestrator.svc.cluster.local:3000' }}
 
 jobs:
@@ -24,7 +24,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set lowercase image name
-        run: echo "IMAGE_NAME=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+        run: |
+          REPO_NAME=$(basename ${{ github.repository }})
+          echo "IMAGE_NAME=pharogames/${REPO_NAME}" >> $GITHUB_ENV
 
       - name: Prepare buildx driver options
         id: buildx-opts
@@ -50,13 +52,6 @@ jobs:
         with:
           platforms: linux/amd64
           driver-opts: ${{ steps.buildx-opts.outputs.driver_opts }}
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -109,7 +104,9 @@ jobs:
 
     steps:
       - name: Set lowercase image name
-        run: echo "IMAGE_NAME=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+        run: |
+          REPO_NAME=$(basename ${{ github.repository }})
+          echo "IMAGE_NAME=pharogames/${REPO_NAME}" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -120,13 +117,6 @@ jobs:
         with:
           app_id: ${{ secrets.APP_ID }}
           private_key: ${{ secrets.APP_PRIVATE_KEY }}
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -149,13 +139,12 @@ jobs:
           APP_TOKEN="${{ steps.app-token.outputs.token }}"
           INFRA_REPO="PharoGames/infrastructure"
           
-          # Extract repo name without server-image- prefix
           REPO_NAME=$(basename ${{ github.repository }})
           SERVER_TYPE=${REPO_NAME#server-image-}
           
           MANIFEST_PATH="kubernetes/${SERVER_TYPE}/image-manifest.yaml"
           IMAGE_DIGEST="${{ steps.digest.outputs.digest }}"
-          FULL_IMAGE="ghcr.io/pharogames/${REPO_NAME}@${IMAGE_DIGEST}"
+          FULL_IMAGE="docker.io/pharogames/${REPO_NAME}@${IMAGE_DIGEST}"
 
           INFRA_DIR=$(mktemp -d)
           INFRA_REPO_URL="https://x-access-token:${APP_TOKEN}@github.com/${INFRA_REPO}.git"
