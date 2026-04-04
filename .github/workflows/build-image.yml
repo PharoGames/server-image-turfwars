@@ -50,30 +50,13 @@ jobs:
       - name: Set lowercase image name
         run: echo "IMAGE_NAME=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
-      - name: Prepare buildx driver options
-        id: buildx-opts
-        run: |
-          if [ -n "${HTTPS_PROXY:-}" ]; then
-            {
-              echo "driver_opts<<OPTS_EOF"
-              echo "network=host"
-              echo "env.HTTP_PROXY=${HTTP_PROXY}"
-              echo "env.HTTPS_PROXY=${HTTPS_PROXY}"
-              echo "OPTS_EOF"
-            } >> "$GITHUB_OUTPUT"
-          else
-            {
-              echo "driver_opts<<OPTS_EOF"
-              echo "network=host"
-              echo "OPTS_EOF"
-            } >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
           platforms: linux/amd64
-          driver-opts: ${{ steps.buildx-opts.outputs.driver_opts }}
+        uses: docker/setup-buildx-action@v3
+        with:
+          platforms: linux/amd64
 
       - name: Generate GitHub App token
         id: app-token
@@ -87,7 +70,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ steps.app-token.outputs.token }}
+          password: ${{ secrets.GHCR_PUSH_TOKEN }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -157,7 +140,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ steps.app-token.outputs.token }}
+          password: ${{ secrets.GHCR_PUSH_TOKEN }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
