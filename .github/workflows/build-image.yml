@@ -1,34 +1,10 @@
-name: Build and Push TurfWars Server Image
+name: Build and Push Server Image
 
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      serverType:
-        description: 'Server type to build'
-        required: false
-        default: 'turfwars'
-      reason:
-        description: 'Reason for rebuild'
-        required: false
-      triggeredBy:
-        description: 'Who/what triggered this build'
-        required: false
-        default: 'manual'
-      pluginName:
-        description: 'Plugin name (if triggered by plugin update)'
-        required: false
-      pluginRepo:
-        description: 'Plugin repository'
-        required: false
-      version:
-        description: 'Plugin version'
-        required: false
-      configVersion:
-        description: 'Config version'
-        required: false
 
 env:
   REGISTRY: ghcr.io
@@ -50,27 +26,37 @@ jobs:
       - name: Set lowercase image name
         run: echo "IMAGE_NAME=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
+      - name: Prepare buildx driver options
+        id: buildx-opts
+        run: |
+          if [ -n "${HTTPS_PROXY:-}" ]; then
+            {
+              echo "driver_opts<<OPTS_EOF"
+              echo "network=host"
+              echo "env.HTTP_PROXY=${HTTP_PROXY}"
+              echo "env.HTTPS_PROXY=${HTTPS_PROXY}"
+              echo "OPTS_EOF"
+            } >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "driver_opts<<OPTS_EOF"
+              echo "network=host"
+              echo "OPTS_EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
           platforms: linux/amd64
-        uses: docker/setup-buildx-action@v3
-        with:
-          platforms: linux/amd64
-
-      - name: Generate GitHub App token
-        id: app-token
-        uses: tibdex/github-app-token@v1
-        with:
-          app_id: ${{ secrets.APP_ID }}
-          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+          driver-opts: ${{ steps.buildx-opts.outputs.driver_opts }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PUSH_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -140,7 +126,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PUSH_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -162,9 +148,14 @@ jobs:
 
           APP_TOKEN="${{ steps.app-token.outputs.token }}"
           INFRA_REPO="PharoGames/infrastructure"
-          MANIFEST_PATH="kubernetes/turfwars/image-manifest.yaml"
+          
+          # Extract repo name without server-image- prefix
+          REPO_NAME=$(basename ${{ github.repository }})
+          SERVER_TYPE=${REPO_NAME#server-image-}
+          
+          MANIFEST_PATH="kubernetes/${SERVER_TYPE}/image-manifest.yaml"
           IMAGE_DIGEST="${{ steps.digest.outputs.digest }}"
-          FULL_IMAGE="ghcr.io/pharogames/server-image-turfwars@${IMAGE_DIGEST}"
+          FULL_IMAGE="ghcr.io/pharogames/${REPO_NAME}@${IMAGE_DIGEST}"
 
           INFRA_DIR=$(mktemp -d)
           INFRA_REPO_URL="https://x-access-token:${APP_TOKEN}@github.com/${INFRA_REPO}.git"
@@ -191,7 +182,7 @@ jobs:
             if git diff --staged --quiet; then
               echo "No changes to commit (image manifest already up to date)"
             else
-              git commit -m "chore: update turfwars image to ${IMAGE_DIGEST}"
+              git commit -m "chore: update ${SERVER_TYPE} image to ${IMAGE_DIGEST}"
               git push origin main || echo "Failed to push (may require manual update)"
               echo "Image manifest updated successfully"
             fi
@@ -210,20 +201,12 @@ jobs:
 
           echo "Using orchestrator URL: ${{ env.ORCHESTRATOR_URL }}"
           echo "Image tag: $IMAGE_TAG"
+          
+          REPO_NAME=$(basename ${{ github.repository }})
+          SERVER_TYPE=${REPO_NAME#server-image-}
 
           curl -f -X POST \
             -H "Authorization: Bearer ${{ secrets.ORCHESTRATOR_API_TOKEN }}" \
-            "${{ env.ORCHESTRATOR_URL }}/updateImage?serverType=turfwars&tag=$IMAGE_TAG" && \
+            "${{ env.ORCHESTRATOR_URL }}/updateImage?serverType=${SERVER_TYPE}&tag=$IMAGE_TAG" && \
             echo "Successfully notified orchestrator" || \
             echo "Warning: Failed to notify orchestrator (will be detected via image manifest polling)"
-
-      - name: Build summary
-        run: |
-          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Server Type:** turfwars" >> $GITHUB_STEP_SUMMARY
-          echo "**Platforms:** linux/amd64" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Digest:** \`${{ steps.digest.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Plugins:** downloaded from s3://pharogames-plugins/ (see plugins.json)" >> $GITHUB_STEP_SUMMARY
