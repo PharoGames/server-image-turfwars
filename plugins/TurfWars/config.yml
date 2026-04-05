@@ -5,8 +5,17 @@ buildWoolAmount: 50
 combatTimerSeconds: 90
 countdownTime: 10
 expectedPlayerWaitTimeout: 20
-kitSelectorItemId: turfwars_kit_selector
-kitSelectorSlot: 8
+kitNpcOrder:
+  - kit.marksman
+  - kit.juggernaut
+  - kit.infiltrator
+  - kit.sniper
+kitNpcSkins:
+  kit_marksman: "Venur"
+  kit_juggernaut: "Notch"
+  kit_infiltrator: "Dinnerbone"
+  kit_sniper: "jeb_"
+kitNpcScale: 1.0
 linesPerKill: 1
 peaceTimerSeconds: 16
 peaceWoolAmount: 25

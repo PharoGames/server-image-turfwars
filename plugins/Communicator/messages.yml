@@ -68,3 +68,10 @@ turfwars:
     message: "<gold>2. {name} <gray>- <white>{kills} kills"
   top_killer_3:
     message: "<red>3. {name} <gray>- <white>{kills} kills"
+  kit_selected:
+    message: "<green>You selected the <yellow>{kit}</yellow> kit!"
+    sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+
+playerdata:
+  xp_earned:
+    message: "<green>+<bold>{amount}</bold> XP"
