@@ -1,7 +1,8 @@
 # Communicator messages for plugin-turfwars (keys must match MatchManager + scoreboard texts.yml).
 # Broadcast keys: turfwars.countdown_tick, countdown_cancelled, build_start, combat_start,
 # peace_start, sudden_death_start, sudden_death_multiplier_increased, player_eliminated,
-# win, top_killers_header, top_killer_1..3. Placeholders: seconds, multiplier, victim, killer,
+# win, top_killers_header, top_killer_1..3. Victim-only: turfwars.player_died (title).
+# Placeholders: seconds, multiplier, victim, killer,
 # color (NamedTextColor key, e.g. blue/red), team, name, kills.
 turfwars:
   countdown_tick:
@@ -51,6 +52,12 @@ turfwars:
     sound: "ENTITY_LIGHTNING_BOLT_THUNDER"
   player_eliminated:
     message: "{victim} <gray>was eliminated by</gray> {killer}!"
+  player_died:
+    title:
+      title: "<#FF5555><bold>YOU DIED"
+      fadeIn: 10
+      stay: 40
+      fadeOut: 20
   win:
     message: "<{color}><bold>{team} <gold>wins the game!"
     title:
