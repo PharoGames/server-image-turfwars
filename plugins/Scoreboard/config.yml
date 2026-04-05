@@ -1,0 +1,144 @@
+# Scoreboard Plugin Configuration — Turf Wars
+
+update-interval-ticks: 20
+default-scoreboard-type: LOBBY
+
+lobby:
+  title: "<gradient:#00D4FF:#00FFD4><bold>TURF WARS</bold></gradient>"
+  lines:
+    - "<dark_gray><strikethrough>                                             </strikethrough>"
+    - ""
+    - "<dark_gray>Map » <aqua>—"
+    - ""
+    - "<dark_gray>Players » <aqua>{players}"
+    - "<dark_gray>Rank » <aqua>{rank_name}"
+    - ""
+    - "<gray>Waiting for players..."
+    - ""
+    - "<dark_gray><strikethrough>                                             </strikethrough>"
+    - "{animation:Footer}"
+
+in_game:
+  title: "<gradient:#00D4FF:#00FFD4><bold>TURF WARS</bold></gradient>"
+  lines:
+    - "<dark_gray><strikethrough>                                             </strikethrough>"
+    - ""
+    - "<dark_gray>Map » <aqua>—"
+    - ""
+    - "<dark_gray>Players » <aqua>{players}"
+    - ""
+    - "<dark_gray><strikethrough>                                             </strikethrough>"
+    - "{animation:Footer}"
+
+spectator:
+  title: "<dark_gray><bold>SPECTATING"
+  lines:
+    - "<dark_gray><strikethrough>                                             </strikethrough>"
+    - ""
+    - "<dark_gray>Map » <aqua>—"
+    - ""
+    - "<dark_gray>Players » <aqua>{players}"
+    - ""
+    - "<dark_gray><strikethrough>                                             </strikethrough>"
+    - "{animation:Footer}"
+
+animations:
+  Footer:
+    interval-ticks: 20
+    frames:
+      - "<aqua>❤ play.pharogames.live ❤"
+      - "<dark_aqua>❤ play.pharogames.live ❤"
+      - "<white>❤ play.pharogames.live ❤"
+
+tablist:
+  enabled: true
+  update-interval-ticks: 10
+  header:
+    - ""
+    - "<gradient:#00D4FF:#00FFD4><bold>TURF WARS</bold></gradient>"
+    - ""
+  footer:
+    - ""
+    - "{animation:Footer}"
+    - ""
+
+scoreboards:
+  tw_waiting:
+    title: "<gradient:#00D4FF:#00FFD4><bold>TURF WARS</bold></gradient>"
+    lines:
+      - "<dark_gray><strikethrough>                              </strikethrough>"
+      - ""
+      - "<dark_gray>Map » <green>{map}"
+      - "<dark_gray>Players » <aqua>{player_count}"
+      - "<dark_gray>Time » <aqua>{time_remaining}s"
+      - ""
+      - "<gray>Waiting for players..."
+      - ""
+      - "<dark_gray><strikethrough>                              </strikethrough>"
+      - "{animation:Footer}"
+  tw_build:
+    title: "<gradient:#00D4FF:#00FFD4><bold>TURF WARS</bold></gradient>"
+    lines:
+      - "<dark_gray><strikethrough>                              </strikethrough>"
+      - ""
+      - "<gray>Phase: <yellow>Build"
+      - ""
+      - "<dark_gray>Time Left » <aqua>{time_remaining}s"
+      - ""
+      - "<blue>Blue Lines: <white>{blue_lines}"
+      - "<red>Red Lines: <white>{red_lines}"
+      - ""
+      - "<dark_gray><strikethrough>                              </strikethrough>"
+      - "{animation:Footer}"
+  tw_combat:
+    title: "<gradient:#00D4FF:#00FFD4><bold>TURF WARS</bold></gradient>"
+    lines:
+      - "<dark_gray><strikethrough>                              </strikethrough>"
+      - ""
+      - "<gray>Phase: <red>Combat"
+      - ""
+      - "<dark_gray>Time Left » <aqua>{time_remaining}s"
+      - ""
+      - "<blue>Blue Lines: <white>{blue_lines}"
+      - "<red>Red Lines: <white>{red_lines}"
+      - ""
+      - "<dark_gray><strikethrough>                              </strikethrough>"
+      - "{animation:Footer}"
+  tw_peace:
+    title: "<gradient:#00D4FF:#00FFD4><bold>TURF WARS</bold></gradient>"
+    lines:
+      - "<dark_gray><strikethrough>                              </strikethrough>"
+      - ""
+      - "<gray>Phase: <green>Peace"
+      - ""
+      - "<dark_gray>Time Left » <aqua>{time_remaining}s"
+      - ""
+      - "<blue>Blue Lines: <white>{blue_lines}"
+      - "<red>Red Lines: <white>{red_lines}"
+      - ""
+      - "<dark_gray><strikethrough>                              </strikethrough>"
+      - "{animation:Footer}"
+  tw_suddendeath:
+    title: "<gradient:#00D4FF:#00FFD4><bold>TURF WARS</bold></gradient>"
+    lines:
+      - "<dark_gray><strikethrough>                              </strikethrough>"
+      - ""
+      - "<gray>Phase: <dark_red><bold>SUDDEN DEATH"
+      - ""
+      - "<blue>Blue Lines: <white>{blue_lines}"
+      - "<red>Red Lines: <white>{red_lines}"
+      - ""
+      - "<dark_gray><strikethrough>                              </strikethrough>"
+      - "{animation:Footer}"
+  tw_ended:
+    title: "<gradient:#00D4FF:#00FFD4><bold>TURF WARS</bold></gradient>"
+    lines:
+      - "<dark_gray><strikethrough>                              </strikethrough>"
+      - ""
+      - "<gray>Match ended!"
+      - ""
+      - "<blue>Blue Lines: <white>{blue_lines}"
+      - "<red>Red Lines: <white>{red_lines}"
+      - ""
+      - "<dark_gray><strikethrough>                              </strikethrough>"
+      - "{animation:Footer}"
