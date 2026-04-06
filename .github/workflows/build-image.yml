@@ -31,6 +31,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
+          version: v0.27.0
           platforms: linux/amd64
 
       - name: Log in to Docker Hub
@@ -91,6 +92,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
+          version: v0.27.0
 
       - name: Generate GitHub App token
         id: app-token
