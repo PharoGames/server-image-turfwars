@@ -1,3 +1,13 @@
 # Action bars — TurfWars uses chat/titles in messages.yml and scoreboard copy in texts.yml.
 # Add entries under turfwars: if the plugin starts using CommunicatorAPI.sendActionBar.
 turfwars: {}
+
+# plugin-coins — kill reward previews (paths: coins.earned.kill, coins.earned.killstreak)
+coins:
+  earned:
+    kill:
+      message: "<gold>+<coins> coins</gold> <gray>(kill)</gray>"
+      duration: 40
+    killstreak:
+      message: "<gold>+<coins> coins</gold> <yellow><bold>{streak} kill streak!</bold></yellow>"
+      duration: 60
