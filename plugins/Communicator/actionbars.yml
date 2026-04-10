@@ -6,8 +6,8 @@ turfwars: {}
 coins:
   earned:
     kill:
-      message: "<gold>+<coins> coins</gold> <gray>(kill)</gray>"
+      message: "<gold>+{coins} coins</gold> <gray>(kill)</gray>"
       duration: 40
     killstreak:
-      message: "<gold>+<coins> coins</gold> <yellow><bold>{streak} kill streak!</bold></yellow>"
+      message: "<gold>+{coins} coins</gold> <yellow><bold>{streak} kill streak!</bold></yellow>"
       duration: 60
