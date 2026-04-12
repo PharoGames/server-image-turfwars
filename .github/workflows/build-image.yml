@@ -19,7 +19,7 @@ jobs:
       packages: write
       actions: read
     env:
-      DOCKER_CONFIG: /tmp/.docker-${{ github.run_id }}-build
+      HOME: /tmp/.home-${{ github.run_id }}-build
 
     steps:
       - name: Checkout repository
@@ -86,7 +86,7 @@ jobs:
       packages: write
       actions: read
     env:
-      DOCKER_CONFIG: /tmp/.docker-${{ github.run_id }}-post
+      HOME: /tmp/.home-${{ github.run_id }}-post
 
     steps:
       - name: Set lowercase image name
