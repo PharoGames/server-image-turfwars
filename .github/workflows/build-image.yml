@@ -30,20 +30,29 @@ jobs:
           REPO_NAME=$(basename ${{ github.repository }})
           echo "IMAGE_NAME=pharogames/${REPO_NAME}" >> $GITHUB_ENV
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          version: v0.27.0
-          platforms: linux/amd64
-          buildkitd-config-inline: |
-            [registry."docker.io"]
-              mirrors = ["mirror.gcr.io"]
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        id: buildx
+        run: |
+          BUILDER_NAME="builder-${GITHUB_RUN_ID}-${GITHUB_JOB}"
+          BUILDKIT_CONFIG="$(mktemp)"
+          cat > "$BUILDKIT_CONFIG" <<'EOF'
+          [registry."docker.io"]
+            mirrors = ["mirror.gcr.io"]
+          EOF
+          docker buildx rm "$BUILDER_NAME" >/dev/null 2>&1 || true
+          CREATE_ARGS=(docker buildx create --name "$BUILDER_NAME" --driver docker-container --buildkitd-config "$BUILDKIT_CONFIG" --platform linux/amd64 --use)
+          while IFS= read -r opt; do
+            [ -n "$opt" ] && CREATE_ARGS+=(--driver-opt "$opt")
+          done <<< "${BUILDX_DRIVER_OPTS:-}"
+          "${CREATE_ARGS[@]}"
+          docker buildx inspect --bootstrap
+          echo "name=$BUILDER_NAME" >> "$GITHUB_OUTPUT"
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
@@ -58,6 +67,7 @@ jobs:
         id: build
         uses: docker/build-push-action@v5
         with:
+          builder: ${{ steps.buildx.outputs.name }}
           context: .
           platforms: linux/amd64
           push: true
@@ -77,6 +87,9 @@ jobs:
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-v2
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-v2
 
+      - name: Remove Docker Buildx builder
+        if: always()
+        run: docker buildx rm "${{ steps.buildx.outputs.name }}" || true
   post-deploy:
     needs: build
     if: success()
@@ -93,11 +106,6 @@ jobs:
         run: |
           REPO_NAME=$(basename ${{ github.repository }})
           echo "IMAGE_NAME=pharogames/${REPO_NAME}" >> $GITHUB_ENV
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          version: v0.27.0
 
       - name: Generate GitHub App token
         id: app-token
