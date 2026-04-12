@@ -34,7 +34,6 @@ jobs:
         uses: docker/setup-buildx-action@v3
         with:
           version: v0.27.0
-          cache-binary: false
           platforms: linux/amd64
           buildkitd-config-inline: |
             [registry."docker.io"]
@@ -99,7 +98,6 @@ jobs:
         uses: docker/setup-buildx-action@v3
         with:
           version: v0.27.0
-          cache-binary: false
 
       - name: Generate GitHub App token
         id: app-token
