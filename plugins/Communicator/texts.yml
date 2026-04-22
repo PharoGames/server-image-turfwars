@@ -11,4 +11,6 @@ turfwars:
     starting_in: "<white>Starting in: <yellow>{seconds}s"
     time_left: "<white>Time left: <yellow>{seconds}s"
     blue_lines: "<blue>Blue Lines: <white>{lines}"
-    red_lines: "<red>Red Lines: <white>{lines}"
+    red_lines: "<red>Red Lines: <white>{lines}"spectator:
+  player_selector:
+    title: "<white>\uE008\uE01C"
